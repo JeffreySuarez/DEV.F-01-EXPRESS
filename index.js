@@ -55,13 +55,25 @@ server.get("/alacena/:tipo/:cantidad", (req, res) => {
 // vamos a usar query
 // ejemplo de su uso
 // QUERY --> peticion req.query
+// como armar un query => luego del endpoint agregar ?clave=valor
 
 server.get("/vehiculos", (req, res) => {
-  let query = req.query;
+  let categori = req.query.categori;
+
+  if (categori === "mazda") {
+    console.log("es un mazda");
+  } else if (categori === "porche") {
+    console.log("es un porche");
+  } else {
+    console.log("no es un carro");
+  }
 
   console.log("Esta ruta me traeria todos los productos segun filtro");
-  console.log("Que es Query", query);
+  console.log("Que es Query", categori);
   //Que es Query {}
+
+  //localhost:3000/vehiculos/?order=ascendente&categori=mazda&color=rojo
+  //Que es Query { order: 'ascendente', categori: 'mazda', color: 'rojo' }
   res.send("Hola soy un query");
 });
 
