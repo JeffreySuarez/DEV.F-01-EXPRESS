@@ -1,56 +1,41 @@
+const { log } = require("console");
 const express = require("express"); //importamos expresss desde el node_modules
 const server = express(); // lo guardamos en una variable --> El me devuelve un objeto {} dentro de ese objeto tenemos varios metodos entre esos estas .get .post .put .delete etc
 //.get se genera es una ruta
 const port = 3000; // en el puerto levantamos la instancia del server
 
-//ejemplo al endpoint "/"
-//RUTAS Y ENDPOINTS
-//res => response respuesta
-//req => request peticion
-//server.get("endpoint a donde voy a hacer el get", (req, res, next)=>{ respuesta que deseo})
-server.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-
-server.get("/product", (req, res) => {
-  res.send("Esta ruta me traería todos los productos");
-});
-
-//PARAMS --> peticion de req.param
-//los dos puntos le dicen a mi endpoint que es un parametro
-server.get("/product/:id", (req, res) => {
-  let id = req.params.id;
-  res.send("hello get");
-  console.log("Esta ruta me va a traer el producto especificado", Number(id));
-});
-
-server.get("/perro/:raza/:color", (req, res) => {
-  let raza = req.params.raza;
-  let color = req.params.color;
-  let params = req.params;
-
-  console.log("la raza del perro es", raza);
-  console.log("el color del perro es ", color);
-  console.log("el contenido del params es", params);
-  // params: { raza: 'chauchau', color: 'marron' }
-  console.log("el contenido del req es", req);
-
-  res.send("hello get perro");
-});
-
-//params con destructuring otro ejemplo
-
-server.get("/alacena/:tipo/:cantidad", (req, res) => {
-  let { tipo } = req.params;
-  let { cantidad } = req.params;
-
-  console.log("la alacena es:", tipo);
-  console.log("la cantidad es ", Number(cantidad));
-  res.send("ruta alacena");
-});
-
-// *******************************************************************
-// ***************************FIN req.params**************************
+let marketProducts = [
+  {
+    name: "Ferrari",
+    color: "red",
+    price: 250,
+    stock: 4,
+  },
+  {
+    name: "Porche",
+    color: "blue",
+    price: 150,
+    stock: 2,
+  },
+  {
+    name: "Mazda",
+    color: "black",
+    price: 50,
+    stock: 8,
+  },
+  {
+    name: "Ford",
+    color: "yellow",
+    price: 30,
+    stock: 2,
+  },
+  {
+    name: "LandRover",
+    color: "yellow",
+    price: 155,
+    stock: 7,
+  },
+];
 
 // vamos a usar query
 // ejemplo de su uso
@@ -58,27 +43,84 @@ server.get("/alacena/:tipo/:cantidad", (req, res) => {
 // como armar un query => luego del endpoint agregar ?clave=valor
 
 server.get("/vehiculos", (req, res) => {
-  let categori = req.query.categori;
+  //1. - Filtrar por query los colores
+  //2. - Filtrar por query los precios
+  //3. - Filtrar por query el stock
 
-  if (categori === "mazda") {
-    console.log("es un mazda");
-  } else if (categori === "porche") {
-    console.log("es un porche");
-  } else {
-    console.log("no es un carro");
+  try {
+    let color = req.query.color;
+    let price = req.query.price;
+    let stock = req.query.stock;
+
+    if (color) {
+      let productoEncontrado = marketProducts.filter((car) => car.color === color);
+      res.status(200).json(productoEncontrado);
+      console.log("====================================");
+      console.log(productoEncontrado);
+      console.log("====================================");
+
+      //localhost:3000/vehiculos?color=yellow
+      /*[  
+      { name: 'Ford', color: 'yellow', price: '30000', stock: '2' },
+      { name: 'LandRover', color: 'yellow', price: '155000', stock: '7' }
+    ]*/
+    } else if (price) {
+      let productoEncontrado = marketProducts.filter((car) => car.price <= price);
+      res.status(200).json(productoEncontrado);
+
+      console.log("====================================");
+      console.log(productoEncontrado);
+      console.log("====================================");
+    } else if (stock) {
+      let productoEncontrado = marketProducts.filter((car) => car.stock >= stock);
+
+      res.status(200).json(productoEncontrado);
+
+      console.log("====================================");
+      console.log(productoEncontrado);
+      console.log("====================================");
+    } else {
+      console.log("====================================");
+      console.log(marketProducts);
+      console.log("====================================");
+      //localhost:3000/vehiculos
+
+      /*
+    [
+  { name: 'Ferrari', color: 'red', price: '250000', stock: '4' },    
+  { name: 'Porche', color: 'blue', price: '150000', stock: '2' },    
+  { name: 'Mazda', color: 'black', price: '50000', stock: '8' },     
+  { name: 'Ford', color: 'yellow', price: '30000', stock: '2' },     
+  { name: 'LandRover', color: 'yellow', price: '155000', stock: '7' }
   }
+  */
 
-  console.log("Esta ruta me traeria todos los productos segun filtro");
-  console.log("Que es Query", categori);
-  //Que es Query {}
+      res.status(200).json(marketProducts);
+    }
+  } catch (error) {
+    console.log("Este es el error que ocaciona todo --->", error);
+    res.status(404).json("NOT FOUND");
+  }
+});
 
-  //localhost:3000/vehiculos/?order=ascendente&categori=mazda&color=rojo
-  //Que es Query { order: 'ascendente', categori: 'mazda', color: 'rojo' }
-  res.send("Hola soy un query");
+server.get("/vehiculos/:name", (req, res) => {
+  try {
+    let name = req.params.name;
+
+    if (name) {
+      let productoEncontrado = marketProducts.find((car) => car.name === name);
+      res.status(200).json(productoEncontrado);
+    } else {
+      res.status(200).json(marketProducts);
+    }
+  } catch (error) {
+    console.log("Este es el error que ocaciona todo --->", error);
+    res.status(404).json("NOT FOUND");
+  }
 });
 
 // *******************************************************************
-// **************************FIN QUERY********************************
+// **************************FIN PARAMS********************************
 
 server.post("/product", (req, res) => {
   res.send("Estoy en la ruta post");
